@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testando Backend</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        button { margin: 5px; }
+        textarea { width: 300px; height: 100px; }
+    </style>
+</head>
+<body>
+
+    <h1>Testar Backend</h1>
+    
+    <h2>GET - Ver Cards</h2>
+    <button onclick="getCards()">Carregar Cards</button>
+    <pre id="cards"></pre>
+    
+    <h2>POST - Adicionar Mensagem</h2>
+    <textarea id="mensagemPost" placeholder="Digite a mensagem"></textarea><br>
+    <button onclick="postMensagem()">Enviar Mensagem</button>
+    <pre id="postResponse"></pre>
+
+    <h2>PUT - Atualizar Mensagem</h2>
+    <input id="numeroPut" type="number" placeholder="Número da Mensagem" min="0"><br>
+    <textarea id="mensagemPut" placeholder="Nova mensagem"></textarea><br>
+    <button onclick="putMensagem()">Atualizar Mensagem</button>
+    <pre id="putResponse"></pre>
+
+    <h2>DELETE - Excluir Mensagem</h2>
+    <input id="numeroDelete" type="number" placeholder="Número da Mensagem" min="0"><br>
+    <button onclick="deleteMensagem()">Deletar Mensagem</button>
+    <pre id="deleteResponse"></pre>
+
+    <script>
+        const apiUrl = 'http://localhost:3000/fds';
+
+        // Função GET
+        function getCards() {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('cards').textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => console.error('Erro ao carregar os cards:', error));
+        }
+
+        // Função POST
+        function postMensagem() {
+            const mensagem = document.getElementById('mensagemPost').value;
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ mensagem })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('postResponse').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => console.error('Erro ao enviar a mensagem:', error));
+        }
+
+        // Função PUT
+        function putMensagem() {
+            const numero = document.getElementById('numeroPut').value;
+            const mensagem = document.getElementById('mensagemPut').value;
+            fetch(apiUrl, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ numero, mensagem })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('putResponse').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => console.error('Erro ao atualizar a mensagem:', error));
+        }
+
+        // Função DELETE
+        function deleteMensagem() {
+            const numero = document.getElementById('numeroDelete').value;
+            fetch(apiUrl, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ numero })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('deleteResponse').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => console.error('Erro ao deletar a mensagem:', error));
+        }
+    </script>
+</body>
+</html>
