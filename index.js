@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { body, validationResult } = require('express-validator');
 
 const app = express();
 const porta = 3000;
@@ -40,7 +41,7 @@ app.delete('/fds', (req, res) => {
 });
 app.put('/fds', (req, res) => {
     const { nome, img, id } = req.body; 
-    vetor[id] = { nome: nome, img: img }; 
+    vetor[id] = { mensagem: nome, numero: img }; 
     res.status(200).json({ mensagem: 'Cartão atualizado com sucesso' });
 });
 
