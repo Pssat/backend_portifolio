@@ -1,52 +1,136 @@
 const express = require('express');
 const cors = require('cors');
-const { body, validationResult } = require('express-validator');
+const admin = require('firebase-admin');
+const serviceAccount = require('./Chave-Firebase.json');
 
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const bd = admin.firestore();
 const app = express();
 const porta = 3000;
 
 app.use(cors());
 app.use(express.json());
 
-const vetor = [
-    { mensagem: 'Projetos 1',  numero: 'https://cdn.leonardo.ai/users/bfc04243-3633-4215-abd8-25cc426aef65/generations/0d9dd8bc-5ca7-4dce-b1eb-43ac57b2aae0/AlbedoBase_XL_create_images_about_something_cyberpunk_with_pur_2.jpg' },
-    { mensagem: 'Projetos 2',  numero: 'https://cdn.leonardo.ai/users/bfc04243-3633-4215-abd8-25cc426aef65/generations/0d9dd8bc-5ca7-4dce-b1eb-43ac57b2aae0/AlbedoBase_XL_create_images_about_something_cyberpunk_with_pur_1.jpg' },
-    { mensagem: 'Projetos 3',  numero: 'https://cdn.leonardo.ai/users/bfc04243-3633-4215-abd8-25cc426aef65/generations/f7d929ba-1f59-4057-8f6f-56ff5441337d/AlbedoBase_XL_create_images_about_cyber_with_purple_and_ora_0.jpg' },
-    { mensagem: 'Projetos 4',  numero: 'https://cdn.leonardo.ai/users/bfc04243-3633-4215-abd8-25cc426aef65/generations/f7d929ba-1f59-4057-8f6f-56ff5441337d/AlbedoBase_XL_create_images_about_cyber_with_purple_and_ora_3.jpg' },
-    { mensagem: 'Projetos 5',  numero: 'https://cdn.leonardo.ai/users/bfc04243-3633-4215-abd8-25cc426aef65/generations/55b10401-dab3-426c-ac38-0bd8421c5b32/AlbedoBase_XL_create_images_about_something_tech_and_cyberpun_1.jpg' },
-    { mensagem: 'Projetos 6',  numero: 'https://cdn.leonardo.ai/users/bfc04243-3633-4215-abd8-25cc426aef65/generations/55b10401-dab3-426c-ac38-0bd8421c5b32/AlbedoBase_XL_create_images_about_something_tech_and_cyberpun_3.jpg' },
-    { mensagem: 'Projetos 7',  numero: 'https://cdn.leonardo.ai/users/bfc04243-3633-4215-abd8-25cc426aef65/generations/0d9dd8bc-5ca7-4dce-b1eb-43ac57b2aae0/AlbedoBase_XL_create_images_about_something_cyberpunk_with_pur_3.jpg' },
-    { mensagem: 'Projetos 8',  numero: 'https://cdn.leonardo.ai/users/bfc04243-3633-4215-abd8-25cc426aef65/generations/f7d929ba-1f59-4057-8f6f-56ff5441337d/AlbedoBase_XL_create_images_about_cyber_with_purple_and_ora_2.jpg' },
-    { mensagem: 'Projetos 9',  numero: 'https://cdn.leonardo.ai/users/bfc04243-3633-4215-abd8-25cc426aef65/generations/f7d929ba-1f59-4057-8f6f-56ff5441337d/AlbedoBase_XL_create_images_about_cyber_with_purple_and_ora_1.jpg' },
-    { mensagem: 'Projetos 10',  numero: 'https://cdn.leonardo.ai/users/bfc04243-3633-4215-abd8-25cc426aef65/generations/d89cf335-b304-49e0-b305-edbced050a66/AlbedoBase_XL_create_images_about_something_tech_and_cyberpun_2.jpg' }
-];
-
-app.get('/fds', (req, res) => {
-    res.status(200).json({vetor});
-    console.log('ta potente')
+// Rota GET
+app.get('/fds', async (req, res) => {
+  try {
+    const response = await bd.collection('cartoes').get();
+    if (response.empty) {
+      console.log('Nenhum cartão encontrado.');
+      return res.status(404).json({ mensagem: 'Nenhum cartão encontrado' });
+    }
+    const vetor = response.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    console.log('Dados retornados com sucesso:', vetor);
+    res.status(200).json({ vetor });
+  } catch (e) {
+    console.error('Erro ao buscar dados:', e);
+    res.status(500).json({ mensagem: 'Erro: ' + e.message });
+  }
 });
 
-app.post('/fds', (req, res) => {
-    const { nome, img } = req.body; 
-    vetor.push({ mensagem: nome, numero: img });
-    console.log(vetor);
-    res.status(201).json({ mensagem: 'é POST' });
-});
 
-app.delete('/fds', (req, res) => {
-    const { index } = req.body; 
-    vetor.splice(index, 1); 
-    console.log(vetor + ' deletado');
-    res.status(201).json({ mensagem: 'Ta Bala' });
-});
-app.put('/fds', (req, res) => {
-    const { nome, img, id } = req.body; 
-    vetor[id] = { mensagem: nome, numero: img }; 
-    res.status(200).json({ mensagem: 'Cartão atualizado com sucesso' });
-});
 
+// // Rota POST
+// app.post('/fds', async (req, res) => {
+//     try {
+//         const { nome, img } = req.body;
+//         if (!nome || !img) {
+//             return res.status(400).json({ erro: 'Campos nome e img são obrigatórios' });
+//         }
+//         if (typeof nome !== 'string' || typeof img !== 'string') {
+//             return res.status(400).json({ erro: 'Campos nome e img devem ser strings' });
+//         }
+//         const novoDoc = await bd.collection('cartoes').add({
+//             mensagem: nome,
+//             numero: img
+//         });
+//         console.log(`Documento adicionado com ID: ${novoDoc.id}`);
+//         res.status(201).json({ mensagem: 'Documento adicionado com sucesso', id: novoDoc.id });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ erro: 'Erro interno no servidor' });
+//     }
+// });
+
+// // Rota DELETE
+// app.delete('/fds', async (req, res) => {
+//     // Log para verificar o corpo da requisição
+//     console.log('Requisição DELETE recebida:', req.body);
+
+//     try {
+//         // Desestruturação do ID do corpo da requisição
+//         const { id } = req.body;
+
+//         // Verificação se o ID foi enviado
+//         if (!id) {
+//             return res.status(400).json({ erro: 'O campo id é obrigatório' });
+//         }
+
+//         // Verifica se o ID é uma string e não está vazio
+//         if (typeof id !== 'string' || id.trim() === '') {
+//             return res.status(400).json({ erro: 'O campo id deve ser uma string não vazia' });
+//         }
+
+//         // Referência do documento a ser deletado
+//         const docRef = bd.collection('cartoes').doc(id);
+
+//         // Tentativa de obter o documento
+//         const doc = await docRef.get();
+
+//         // Verifica se o documento existe
+//         if (!doc.exists) {
+//             return res.status(404).json({ erro: 'Documento não encontrado' });
+//         }
+
+//         // Deleta o documento
+//         await docRef.delete();
+//         console.log(`Documento com ID ${id} deletado com sucesso`);
+
+//         // Resposta de sucesso
+//         res.status(200).json({ mensagem: 'Documento deletado com sucesso' });
+
+//     } catch (error) {
+//         // Log do erro para ajudar na depuração
+//         console.error('Erro ao deletar documento:', error);
+//         res.status(500).json({ erro: 'Erro interno no servidor' });
+//     }
+// });
+
+
+
+// // Rota PUT
+// app.put('/fds', async (req, res) => {
+//     try {
+//         const { nome, img, id } = req.body;
+//         if (!id || !nome || !img) {
+//             return res.status(400).json({ erro: 'Campos id, nome e img são obrigatórios' });
+//         }
+//         if (typeof id !== 'string' || typeof nome !== 'string' || typeof img !== 'string') {
+//             return res.status(400).json({ erro: 'Campos id, nome e img devem ser strings' });
+//         }
+//         const docRef = bd.collection('cartoes').doc(id);
+//         const doc = await docRef.get();
+//         if (!doc.exists) {
+//             return res.status(404).json({ erro: 'Documento não encontrado' });
+//         }
+//         await docRef.update({
+//             mensagem: nome,
+//             numero: img
+//         });
+//         console.log(`Documento com ID ${id} atualizado: { nome: ${nome}, img: ${img} }`);
+//         res.status(200).json({ mensagem: 'Cartão atualizado com sucesso' });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ erro: 'Erro interno no servidor' });
+//     }
+// });
 
 app.listen(porta, () => {
     console.log(`Servidor rodando na porta ${porta}`);
 });
-
