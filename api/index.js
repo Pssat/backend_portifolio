@@ -30,18 +30,20 @@ app.get('/fds', async (req, res) => {
     if (response.empty) {
       console.log('Nenhum cartão encontrado.');
       res.status(404).json({ mensagem: 'Nenhum cartão encontrado' });
+    } else {
+      const vetor = response.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log('Dados retornados com sucesso:', vetor);
+      res.status(200).json({ vetor });
     }
-    const vetor = response.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    console.log('Dados retornados com sucesso:', vetor);
-    res.status(200).json({ vetor });
   } catch (e) {
     console.error('Erro ao buscar dados:', e);
     res.status(500).json({ mensagem: 'Erro: ' + e.message });
   }
 });
+
 
 app.post('/fds', async (req, res) => {
   try {
