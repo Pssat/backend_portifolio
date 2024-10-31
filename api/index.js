@@ -113,7 +113,7 @@ app.put('/fds', async (req, res) => {
         console.log('Cartão não encontrado com ID ' + id);
       } else {
         // Atualiza apenas os campos 'mensagem' e 'img'
-        const dadosAtualizados = { mensagem: nome, img };
+        const dadosAtualizados = { mensagem: nome, numero: img };
         await docRef.update(dadosAtualizados);
 
         res.status(200).json({ mensagem: 'Cartão com ID ' + id + ' atualizado' });
