@@ -112,7 +112,7 @@ app.put('/fds', async (req, res) => {
         res.status(404).json({ erro: 'Cartão com ID ' + id + ' não encontrado' });
         console.log('Cartão não encontrado com ID ' + id);
       } else {
-        const dadosAtualizados = { nome, img };
+        const dadosAtualizados = { mensagem, img };
         await docRef.update(dadosAtualizados);
 
         res.status(200).json({ mensagem: 'Cartão com ID ' + id + ' atualizado' });
