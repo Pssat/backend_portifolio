@@ -99,32 +99,32 @@ app.put('/fds', async (req, res) => {
   const { nome, img, id } = req.body;
   if (!id || !nome || !img) {
     res.status(400).json({ erro: 'Campos id, nome e img são obrigatórios' });
-    console.log('Cartão não atualizado');
-  }
-  if (typeof id !== 'string' || typeof nome !== 'string' || typeof img !== 'string') {
+    console.log('Cartão não atualizado: Campos obrigatórios ausentes');
+  } else if (typeof id !== 'string' || typeof nome !== 'string' || typeof img !== 'string') {
     res.status(400).json({ erro: 'Campos id, nome e img devem ser strings' });
-  }
-  try {
-    const docRef = bd.collection('cartoes').doc(id);
-    const doc = await docRef.get();
-    if (!doc.exists) {
-      res.status(404).json({ erro: 'cartão com ID' + id + 'não encontrado' });
-      console.log('Caartão não encontrado');
+    console.log('Cartão não atualizado: Campos devem ser strings');
+  } else {
+    try {
+      const docRef = bd.collection('cartoes').doc(id);
+      const doc = await docRef.get();
 
-    }else{
-      const dadosAtualizados = {};
-      if (nome) dadosAtualizados.nome = nome;
-      if (img) dadosAtualizados.img = img;
-      await docRef.update(dadosAtualizados);
-      res.status(200).json({mensagem: 'Cartão com ID' + id + 'atualizado'});
-      console.log('Cartão com ID ' + id + 'atualizar');
-      
+      if (!doc.exists) {
+        res.status(404).json({ erro: 'Cartão com ID ' + id + ' não encontrado' });
+        console.log('Cartão não encontrado com ID ' + id);
+      } else {
+        const dadosAtualizados = { nome, img };
+        await docRef.update(dadosAtualizados);
+
+        res.status(200).json({ mensagem: 'Cartão com ID ' + id + ' atualizado' });
+        console.log('Cartão com ID ' + id + ' atualizado');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar cartão:', error);
+      res.status(500).json({ mensagem: 'Erro ao atualizar cartão' });
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensagem: 'Erro ao atualizar cartão' });
   }
 });
+
 
 module.exports = app;
 // app.listen(3000, () => {
