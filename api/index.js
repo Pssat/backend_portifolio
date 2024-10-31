@@ -71,7 +71,7 @@ app.delete('/fds', async (req, res) => {
   console.log('Requisição DELETE recebida:', req.body);
 
   try {
-    const { id } = req.body.vetor;
+    const { id } = req.body;
     if (!id) {
       res.status(400).json({ erro: 'O campo id é obrigatório' });
       console.log('ID do cartão não forncecido');
